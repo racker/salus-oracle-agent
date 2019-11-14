@@ -13,7 +13,8 @@ import (
 
 type monitor struct {
 	interval int
-	databaseName string
+	databaseName []string
+	logFilePath string
 }
 
 type telegrafJsonMetric struct {
@@ -25,20 +26,15 @@ type telegrafJsonMetric struct {
 
 type DataguardConfiguration struct {
 	generalInfo monitor
-	replication int
 }
 
-type DataguardOutput struct {
-
-}
-
-type Tablespace struct  {
+type TablespaceConfiguration struct  {
 	generalInfo monitor
 }
 
-type Rman struct {
+type RmanConfiguration struct {
 	generalInfo monitor
-
+	errorCodeWhitelist []string
 }
 
 var tickers = make(map[string]time.Ticker)
@@ -51,11 +47,11 @@ func main() {
 	var ticker = setupTimer(5, "dataguard.txt", processDataguard, createDataguardOutput)
 	tickers["dataguard"] = ticker
 
-	//var ticker2 = setupTimer(5, "RMAN.txt", processRMAN, createRMANOutput)
-	//tickers["rman"] = ticker2
+	var ticker2 = setupTimer(5, "RMAN.txt", processRMAN, createRMANOutput)
+	tickers["rman"] = ticker2
 
-	//var ticker3 = setupTimer(5, "tablespace.txt", processTablespace, createTablespaceOutput)
-	//tickers["tablespace"] = ticker3
+	var ticker3 = setupTimer(5, "tablespace.txt", processTablespace, createTablespaceOutput)
+	tickers["tablespace"] = ticker3
 
 
 	for { } // make sure the application continues to run
@@ -85,10 +81,9 @@ func createRMANOutput(input []string, fileName string) {
 		output.Fields["status"] = "success"
 	}
 	WriteToEnvoy(generateJSON(output))
-	//return output
 }
 
-//for tablespace we need to emit for every line
+//for tablespace we need to emit for every line in the file
 func createTablespaceOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
@@ -112,8 +107,6 @@ func createTablespaceOutput(input []string, fileName string) {
 			}
 		}
 	}
-
-	//return output
 }
 
 func createDataguardOutput(input []string, fileName string) {
@@ -129,7 +122,6 @@ func createDataguardOutput(input []string, fileName string) {
 		output.Fields["replication"], _ = strconv.Atoi(input[0])
 	}
 	WriteToEnvoy(generateJSON(output))
-	//return output
 }
 
 func getFileInformation(fileName string) time.Time {
