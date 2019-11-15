@@ -11,32 +11,6 @@ import (
 	"time"
 )
 
-type monitor struct {
-	interval int
-	databaseName []string
-	logFilePath string
-}
-
-type telegrafJsonMetric struct {
-	Timestamp time.Time
-	Name      string
-	Tags      map[string]string
-	Fields    map[string]interface{}
-} // this is our output format
-
-type DataguardConfiguration struct {
-	generalInfo monitor
-}
-
-type TablespaceConfiguration struct  {
-	generalInfo monitor
-}
-
-type RmanConfiguration struct {
-	generalInfo monitor
-	errorCodeWhitelist []string
-}
-
 var tickers = make(map[string]time.Ticker)
 var conn connection
 
@@ -69,8 +43,6 @@ func generateJSON(input telegrafJsonMetric) []byte {
 	}
 	return returnValue
 }
-
-type monitorOutput func([]string, string)
 
 func createRMANOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
@@ -165,11 +137,6 @@ func readFile(fileName string, dispatch func(string)[]string) []string {
 	return output
 }
 
-
-
-
-
-type dispatchProcessing func(string) []string
 
 func processRMAN(input string) []string {
 	var errorCode = regexp.MustCompile(`ORA-[0-9]+|RMAN-[0-9]+`)
