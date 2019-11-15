@@ -13,7 +13,7 @@ func updateConf() {
 
 
 
-func setupTimer(interval int, fileName string, dispatch func(string)[]string, dispatchOutput func([]string, string)) time.Ticker {
+func setupTimer(interval int, fileName string, dispatch dispatchProcessing, dispatchOutput monitorOutput) time.Ticker {
 	ticker := time.NewTicker( time.Duration(interval) * time.Second)
 	done := make(chan bool)
 

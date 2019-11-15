@@ -38,23 +38,25 @@ type RmanConfiguration struct {
 }
 
 var tickers = make(map[string]time.Ticker)
-
+var conn connection
 
 
 func main() {
 
+	err := conn.connect()
+	if err != nil {
+		conn.retry()
+	}
+
 	// This is here only till we get configuration management up to show that each one works
-	var ticker = setupTimer(5, "dataguard.txt", processDataguard, createDataguardOutput)
-	tickers["dataguard"] = ticker
+	tickers["dataguard"] = setupTimer(5, "dataguard.txt", processDataguard, createDataguardOutput)
 
-	var ticker2 = setupTimer(5, "RMAN.txt", processRMAN, createRMANOutput)
-	tickers["rman"] = ticker2
+	tickers["rman"]  = setupTimer(5, "RMAN.txt", processRMAN, createRMANOutput)
 
-	var ticker3 = setupTimer(5, "tablespace.txt", processTablespace, createTablespaceOutput)
-	tickers["tablespace"] = ticker3
+	tickers["tablespace"] = setupTimer(5, "tablespace.txt", processTablespace, createTablespaceOutput)
 
 
-	for { } // make sure the application continues to run
+	select { } // make sure the application continues to run
 
 }
 
@@ -68,6 +70,8 @@ func generateJSON(input telegrafJsonMetric) []byte {
 	return returnValue
 }
 
+type monitorOutput func([]string, string)
+
 func createRMANOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
@@ -80,7 +84,7 @@ func createRMANOutput(input []string, fileName string) {
 		output.Fields["file_age"] = getFileInformation(fileName)
 		output.Fields["status"] = "success"
 	}
-	WriteToEnvoy(generateJSON(output))
+	conn.WriteToEnvoy(generateJSON(output))
 }
 
 //for tablespace we need to emit for every line in the file
@@ -93,7 +97,7 @@ func createTablespaceOutput(input []string, fileName string) {
 
 	if input == nil {
 		output.Fields["status"] = "missing"
-		WriteToEnvoy(generateJSON(output))
+		conn.WriteToEnvoy(generateJSON(output))
 	} else {
 		output.Fields["file_age"] = getFileInformation(fileName)
 		output.Fields["status"] = "success"
@@ -103,7 +107,7 @@ func createTablespaceOutput(input []string, fileName string) {
 			} else {
 				output.Fields["usage"] = element
 				// We need to make sure we are sending it after both have been set
-				WriteToEnvoy(generateJSON(output))
+				conn.WriteToEnvoy(generateJSON(output))
 			}
 		}
 	}
@@ -121,7 +125,7 @@ func createDataguardOutput(input []string, fileName string) {
 		output.Fields["status"] = "success"
 		output.Fields["replication"], _ = strconv.Atoi(input[0])
 	}
-	WriteToEnvoy(generateJSON(output))
+	conn.WriteToEnvoy(generateJSON(output))
 }
 
 func getFileInformation(fileName string) time.Time {
@@ -164,12 +168,9 @@ func readFile(fileName string, dispatch func(string)[]string) []string {
 
 
 
-/**
-The following three functions must follow the same interface of
-func funcName(input string) []string
-This allows us to pass the functions into the Ticker to setup what needs to be done to the data
-as we read it in from the files.
- */
+
+type dispatchProcessing func(string) []string
+
 func processRMAN(input string) []string {
 	var errorCode = regexp.MustCompile(`ORA-[0-9]+|RMAN-[0-9]+`)
 
