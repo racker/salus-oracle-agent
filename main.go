@@ -12,22 +12,43 @@ import (
 )
 
 var tickers = make(map[string]time.Ticker)
-var conn connection
+var conn iconnection = &connection{}
+var timestamp iTimeInformation = &TimeInformation{}
+
+
+type iTimeInformation interface {
+	Now() time.Time
+	getFileInformation(string) time.Time
+}
+
+type TimeInformation struct {}
+
+func (t *TimeInformation) Now() time.Time {
+	return time.Now()
+}
+
+func (t *TimeInformation) getFileInformation(fileName string) time.Time {
+	fileStat, err := os.Stat(fileName)
+	if err != nil {
+		log.Fatal("Unable to read file: ", err)
+	}
+	return fileStat.ModTime()
+}
 
 
 func main() {
 
-	err := conn.connect()
+	err := conn.Retry()
 	if err != nil {
-		conn.retry()
+		log.Fatalf("Failed to connect to Envoy: %s", err)
 	}
 
 	// This is here only till we get configuration management up to show that each one works
-	tickers["dataguard"] = setupTimer(5, "dataguard.txt", processDataguard, createDataguardOutput)
+	tickers["dataguard"] = setupTimer(5, "./testdata/dataguard.txt", processDataguard, createDataguardOutput)
 
-	tickers["rman"]  = setupTimer(5, "RMAN.txt", processRMAN, createRMANOutput)
+	tickers["rman"]  = setupTimer(5, "./testdata/RMAN.txt", processRMAN, createRMANOutput)
 
-	tickers["tablespace"] = setupTimer(5, "tablespace.txt", processTablespace, createTablespaceOutput)
+	tickers["tablespace"] = setupTimer(5, "./testdata/tablespace.txt", processTablespace, createTablespaceOutput)
 
 
 	select { } // make sure the application continues to run
@@ -48,12 +69,12 @@ func createRMANOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Fields["error_codes"] = input
-	output.Timestamp = time.Now()
+	output.Timestamp = timestamp.Now()
 	output.Name = "RMAN"
 	if input == nil {
 		output.Fields["status"] = "missing"
 	}else {
-		output.Fields["file_age"] = getFileInformation(fileName)
+		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
 	}
 	conn.WriteToEnvoy(generateJSON(output))
@@ -64,14 +85,14 @@ func createTablespaceOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Tags = make(map[string]string)
-	output.Timestamp = time.Now()
+	output.Timestamp = timestamp.Now()
 	output.Name = "Tablespace"
 
 	if input == nil {
 		output.Fields["status"] = "missing"
 		conn.WriteToEnvoy(generateJSON(output))
 	} else {
-		output.Fields["file_age"] = getFileInformation(fileName)
+		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
 		for index, element := range input {
 			if index%2 == 0 { // even should be tablespace name
@@ -88,27 +109,19 @@ func createTablespaceOutput(input []string, fileName string) {
 func createDataguardOutput(input []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
-	output.Timestamp = time.Now()
+	output.Timestamp = timestamp.Now()
 	output.Name = "dataguard"
 	if input == nil {
 		output.Fields["status"] = "missing"
 	}else {
-		output.Fields["file_age"] = getFileInformation(fileName)
+		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
 		output.Fields["replication"], _ = strconv.Atoi(input[0])
 	}
 	conn.WriteToEnvoy(generateJSON(output))
 }
 
-func getFileInformation(fileName string) time.Time {
-	fileStat, err := os.Stat(fileName)
-	if err != nil {
-		log.Fatal("Unable to read file: ", err)
-	}
-	return fileStat.ModTime()
-}
-
-func readFile(fileName string, dispatch func(string)[]string) []string {
+func readFile(fileName string, dispatch dispatchProcessing) []string {
 	file, err := os.Open(fileName)
 	if err != nil {
 		// We need to continue to send metrics through the system even if we can't read the file
@@ -148,6 +161,10 @@ func processRMAN(input string) []string {
 
 func processTablespace(input string) []string {
 	values := strings.Split(input, ":")
+	for index, element := range values {
+		values[index] = strings.TrimSpace(element)
+	}
+
 	return values
 }
 

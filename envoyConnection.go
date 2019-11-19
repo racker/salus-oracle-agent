@@ -14,12 +14,15 @@ var port = 8094
 var retryLimit = 5
 
 
+type iconnection interface {
+	WriteToEnvoy(input []byte)
+	Retry() error
+}
+
 type connection struct {
 	conn net.Conn
 	mux sync.Mutex
 }
-
-
 
 
 func (c *connection)  connect() error {
@@ -37,21 +40,18 @@ func (c *connection)  connect() error {
 }
 
 
-func (c *connection) retry() error {
-	var i = 0
+func (c *connection) Retry() error {
 	if c.conn != nil {
 		c.conn.Close()
 		c.conn = nil
 	}
-	for i < retryLimit{
+	for i := 0; i < retryLimit; i++ {
 
 		time.Sleep(10*time.Second)
 		log.Println("Retrying connection to Envoy")
 		err := c.connect()
 
-		if err != nil {
-			i++
-		}else {
+		if err == nil {
 			log.Println("Succeeded in reconnecting to Envoy")
 			return nil
 		}
@@ -71,7 +71,7 @@ func (c *connection) WriteToEnvoy(input []byte) {
 		_, err := c.conn.Write(input)
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
-			err := c.retry()
+			err := c.Retry()
 			if err != nil {
 				log.Fatalf("Could not connect to Envoy: %s\n", err)
 			}
@@ -79,7 +79,7 @@ func (c *connection) WriteToEnvoy(input []byte) {
 	}else {
 
 		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection")
-		err := c.retry()
+		err := c.Retry()
 		if err != nil {
 			log.Fatalf("Could not connect to Envoy: %s\n", err)
 		}
