@@ -30,22 +30,21 @@ func (t *Testconnection) WriteToEnvoy(input []byte) {
 }
 
 func (t *Testconnection) Retry() error {
-
 	return nil
 }
 
 
 
 
-// set the data for testing against here.
 
 
 func TestDataguardOutput(t *testing.T) {
 	testObj := new (Testconnection)
 	var byteOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"dataguard\",\"Tags\":null,\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"replication\":1,\"status\":\"success\"}}")
+	conn = testObj
 
 	testObj.On("WriteToEnvoy", byteOutput)
-	conn = testObj
+
 	timestamp = new (TestTimeInformation)
 	var value = []string{"1"}
 	createDataguardOutput(value, "notUsed")
@@ -59,9 +58,8 @@ func TestDataguardOutput(t *testing.T) {
 
 func TestRMANOutput(t *testing.T) {
 	testObj := new (Testconnection)
-	otherTestObj := new (TestTimeInformation)
 	conn = testObj
-	timestamp = otherTestObj
+	timestamp = new (TestTimeInformation)
 	var value = []string{"RMAN-12345","ORA-123","RMAN-456123"}
 	var byteOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[\"RMAN-12345\",\"ORA-123\",\"RMAN-456123\"],\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\"}}")
 	testObj.On("WriteToEnvoy", byteOutput)
@@ -72,20 +70,19 @@ func TestRMANOutput(t *testing.T) {
 
 func TestTablespaceOutput(t *testing.T) {
 	testObj := new (Testconnection)
-	otherTestObj := new (TestTimeInformation)
 	conn = testObj
-	timestamp = otherTestObj
+	timestamp = new (TestTimeInformation)
 	var value = []string{"SYSTEM", "2.59", "SYSAUX", "3.48"}
-	var byteOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSTEM\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"2.59\"}}")
-	var secondOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSAUX\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"3.48\"}}")
+	var systemTableOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSTEM\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"2.59\"}}")
+	var sysauxTableOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSAUX\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"3.48\"}}")
 
-	testObj.On("WriteToEnvoy", byteOutput)
-	testObj.On("WriteToEnvoy", secondOutput)
+	testObj.On("WriteToEnvoy", systemTableOutput)
+	testObj.On("WriteToEnvoy", sysauxTableOutput)
 	//testObj.On("WriteToEnvoy", byteOutput)
 	createTablespaceOutput(value, "notUsed")
 
-	testObj.AssertCalled(t, "WriteToEnvoy", byteOutput)
-	testObj.AssertCalled(t, "WriteToEnvoy", secondOutput)
+	testObj.AssertCalled(t, "WriteToEnvoy", systemTableOutput)
+	testObj.AssertCalled(t, "WriteToEnvoy", sysauxTableOutput)
 }
 
 func TestProcessRMAN(t *testing.T) {
