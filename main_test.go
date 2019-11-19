@@ -91,19 +91,20 @@ func TestTablespaceOutput(t *testing.T) {
 func TestProcessRMAN(t *testing.T) {
 	result := readFile("./testdata/RMAN.txt",processRMAN)
 
-	if len(result) != 3 {
-		t.Fail()
-	}
+	assert.Equal(t, 3, len(result), "RMAN file should have 3 error codes in it")
+	assert.Equal(t, "RMAN-12345", result[0])
+	assert.Equal(t, "ORA-123", result[1])
+	assert.Equal(t, "RMAN-456123", result[2])
 }
 
 func TestProcessTablespace(t *testing.T) {
 
 	result := readFile("./testdata/tablespace.txt", processTablespace)
 	assert.Equal(t, 4, len(result), "tablespace file only has two lines which should result in 4 values in the array")
-	assert.Equal(t, "SYSTEM", result[0], "")
-	assert.Equal(t, "2.59", result[1], "")
-	assert.Equal(t, "SYSAUX", result[2], "")
-	assert.Equal(t, "3.48", result[3] )
+	assert.Equal(t, "SYSTEM", result[0])
+	assert.Equal(t, "2.59", result[1])
+	assert.Equal(t, "SYSAUX", result[2])
+	assert.Equal(t, "3.48", result[3])
 }
 
 func TestProcessDataguard(t *testing.T) {
