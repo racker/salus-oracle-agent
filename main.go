@@ -65,7 +65,7 @@ func generateJSON(input telegrafJsonMetric) []byte {
 	return returnValue
 }
 
-func createRMANOutput(processedData []string, fileName string) {
+var createRMANOutput monitorOutput = func(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Fields["error_codes"] = processedData
@@ -81,7 +81,7 @@ func createRMANOutput(processedData []string, fileName string) {
 }
 
 //for tablespace we need to emit for every line in the file
-func createTablespaceOutput(processedData []string, fileName string) {
+var createTablespaceOutput monitorOutput = func(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Tags = make(map[string]string)
@@ -106,7 +106,7 @@ func createTablespaceOutput(processedData []string, fileName string) {
 	}
 }
 
-func createDataguardOutput(processedData []string, fileName string) {
+var createDataguardOutput monitorOutput = func(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Timestamp = timestamp.Now()
@@ -151,7 +151,7 @@ func readFile(fileName string, dispatch dispatchProcessing) []string {
 }
 
 
-func processRMAN(fileLine string) []string {
+var processRMAN dispatchProcessing = func(fileLine string) []string {
 	var errorCode = regexp.MustCompile(`ORA-[0-9]+|RMAN-[0-9]+`)
 
 	var returnValues = errorCode.FindAllString(fileLine, -1)
@@ -159,7 +159,7 @@ func processRMAN(fileLine string) []string {
 	return returnValues
 }
 
-func processTablespace(fileLine string) []string {
+var processTablespace dispatchProcessing = func(fileLine string) []string {
 	values := strings.Split(fileLine, ":")
 	for index, element := range values {
 		values[index] = strings.TrimSpace(element)
@@ -168,7 +168,7 @@ func processTablespace(fileLine string) []string {
 	return values
 }
 
-func processDataguard(fileLine string) []string {
+var processDataguard dispatchProcessing = func(fileLine string) []string {
 	return []string{fileLine}
 }
 
