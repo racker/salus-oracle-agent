@@ -63,7 +63,7 @@ func (c *connection) Retry() error {
 
 
 func (c *connection) WriteToEnvoy(input []byte) {
-
+	errFlag := false
 	c.mux.Lock()
 	if c.conn != nil {
 
@@ -75,6 +75,7 @@ func (c *connection) WriteToEnvoy(input []byte) {
 			if err != nil {
 				log.Fatalf("Could not connect to Envoy: %s\n", err)
 			}
+			errFlag = true
 		}
 	}else {
 
@@ -83,10 +84,12 @@ func (c *connection) WriteToEnvoy(input []byte) {
 		if err != nil {
 			log.Fatalf("Could not connect to Envoy: %s\n", err)
 		}
+		errFlag = true
 	}
 	c.mux.Unlock()
-
-
+	if errFlag {
+		c.WriteToEnvoy(input)
+	}
 }
 
 
