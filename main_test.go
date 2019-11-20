@@ -21,11 +21,9 @@ func (t *TestTimeInformation) getFileInformation(fileName string) time.Time {
 
 type Testconnection struct {
 	mock.Mock
-	value []byte
 }
 
 func (t *Testconnection) WriteToEnvoy(input []byte) {
-	t.value = input
 	t.Called(input)
 }
 
@@ -43,15 +41,11 @@ func TestDataguardOutput(t *testing.T) {
 	var byteOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"dataguard\",\"Tags\":null,\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"replication\":1,\"status\":\"success\"}}")
 	conn = testObj
 
-	testObj.On("WriteToEnvoy", byteOutput)
+	testObj.On("WriteToEnvoy", mock.Anything)
 
 	timestamp = new (TestTimeInformation)
 	var value = []string{"1"}
 	createDataguardOutput(value, "notUsed")
-
-	if string(testObj.value) != string(byteOutput) {
-		t.Fail()
-	}
 
 	testObj.AssertCalled(t, "WriteToEnvoy", byteOutput)
 }
@@ -62,7 +56,7 @@ func TestRMANOutput(t *testing.T) {
 	timestamp = new (TestTimeInformation)
 	var value = []string{"RMAN-12345","ORA-123","RMAN-456123"}
 	var byteOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[\"RMAN-12345\",\"ORA-123\",\"RMAN-456123\"],\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\"}}")
-	testObj.On("WriteToEnvoy", byteOutput)
+	testObj.On("WriteToEnvoy", mock.Anything)
 	createRMANOutput(value, "notUsed")
 
 	testObj.AssertCalled(t, "WriteToEnvoy", byteOutput)
@@ -76,9 +70,7 @@ func TestTablespaceOutput(t *testing.T) {
 	var systemTableOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSTEM\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"2.59\"}}")
 	var sysauxTableOutput = []byte("{\"Timestamp\":\"2019-11-19T14:40:59.201685-08:00\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSAUX\"},\"Fields\":{\"file_age\":\"2019-11-19T14:40:59.201685-08:00\",\"status\":\"success\",\"usage\":\"3.48\"}}")
 
-	testObj.On("WriteToEnvoy", systemTableOutput)
-	testObj.On("WriteToEnvoy", sysauxTableOutput)
-	//testObj.On("WriteToEnvoy", byteOutput)
+	testObj.On("WriteToEnvoy", mock.Anything)
 	createTablespaceOutput(value, "notUsed")
 
 	testObj.AssertCalled(t, "WriteToEnvoy", systemTableOutput)

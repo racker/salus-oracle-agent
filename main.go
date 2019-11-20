@@ -65,13 +65,13 @@ func generateJSON(input telegrafJsonMetric) []byte {
 	return returnValue
 }
 
-func createRMANOutput(input []string, fileName string) {
+func createRMANOutput(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
-	output.Fields["error_codes"] = input
+	output.Fields["error_codes"] = processedData
 	output.Timestamp = timestamp.Now()
 	output.Name = "RMAN"
-	if input == nil {
+	if processedData == nil {
 		output.Fields["status"] = "missing"
 	}else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
@@ -81,20 +81,20 @@ func createRMANOutput(input []string, fileName string) {
 }
 
 //for tablespace we need to emit for every line in the file
-func createTablespaceOutput(input []string, fileName string) {
+func createTablespaceOutput(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Tags = make(map[string]string)
 	output.Timestamp = timestamp.Now()
 	output.Name = "Tablespace"
 
-	if input == nil {
+	if processedData == nil {
 		output.Fields["status"] = "missing"
 		conn.WriteToEnvoy(generateJSON(output))
 	} else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
-		for index, element := range input {
+		for index, element := range processedData {
 			if index%2 == 0 { // even should be tablespace name
 				output.Tags["tablespace_name"] = element
 			} else {
@@ -106,17 +106,17 @@ func createTablespaceOutput(input []string, fileName string) {
 	}
 }
 
-func createDataguardOutput(input []string, fileName string) {
+func createDataguardOutput(processedData []string, fileName string) {
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Timestamp = timestamp.Now()
 	output.Name = "dataguard"
-	if input == nil {
+	if processedData == nil {
 		output.Fields["status"] = "missing"
 	}else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
-		output.Fields["replication"], _ = strconv.Atoi(input[0])
+		output.Fields["replication"], _ = strconv.Atoi(processedData[0])
 	}
 	conn.WriteToEnvoy(generateJSON(output))
 }
@@ -151,16 +151,16 @@ func readFile(fileName string, dispatch dispatchProcessing) []string {
 }
 
 
-func processRMAN(input string) []string {
+func processRMAN(fileLine string) []string {
 	var errorCode = regexp.MustCompile(`ORA-[0-9]+|RMAN-[0-9]+`)
 
-	var returnValues = errorCode.FindAllString(input, -1)
+	var returnValues = errorCode.FindAllString(fileLine, -1)
 
 	return returnValues
 }
 
-func processTablespace(input string) []string {
-	values := strings.Split(input, ":")
+func processTablespace(fileLine string) []string {
+	values := strings.Split(fileLine, ":")
 	for index, element := range values {
 		values[index] = strings.TrimSpace(element)
 	}
@@ -168,7 +168,7 @@ func processTablespace(input string) []string {
 	return values
 }
 
-func processDataguard(input string) []string {
-	return []string{input}
+func processDataguard(fileLine string) []string {
+	return []string{fileLine}
 }
 
