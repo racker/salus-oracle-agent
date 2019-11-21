@@ -15,13 +15,10 @@ func updateConf() {
 
 func setupTimer(interval int, fileName string, dispatch dispatchProcessing, dispatchOutput monitorOutput) time.Ticker {
 	ticker := time.NewTicker( time.Duration(interval) * time.Second)
-	done := make(chan bool)
 
 	go func() {
 		for {
 			select {
-			case <-done:
-				return
 			case <-ticker.C:
 				var output = readFile(fileName, dispatch)
 				dispatchOutput(output, fileName)

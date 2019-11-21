@@ -138,8 +138,7 @@ func readFile(fileName string, dispatch dispatchProcessing) []string {
 		return nil
 	}
 	for scanner.Scan() {
-		var value = scanner.Text()
-		var temp = dispatch(value)
+		var temp = dispatch(scanner.Text())
 
 		for _, element := range temp {
 			output = append(output, element)

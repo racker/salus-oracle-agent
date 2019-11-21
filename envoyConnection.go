@@ -67,8 +67,8 @@ func (c *connection) WriteToEnvoy(input []byte) {
 	c.mux.Lock()
 	if c.conn != nil {
 
-		c.conn.Write([]byte("\r\n"))
-		_, err := c.conn.Write(input)
+
+		_, err := c.conn.Write(append(input, []byte("\r\n")...))
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
 			err := c.Retry()
