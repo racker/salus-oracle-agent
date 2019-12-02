@@ -1,9 +1,9 @@
-project_name: telemetry-oracle-agent
+project_name: salus-oracle-agent
 before:
   hooks:
     - go mod download
 builds:
-  - binary: telemetry-oracle-agent
+  - binary: salus-oracle-agent
     env:
       - CGO_ENABLED=0
     goos:
@@ -39,4 +39,4 @@ changelog:
 release:
   github:
     owner: racker
-    name: salus-telemetry-oracle-agent
+    name: salus-oracle-agent
