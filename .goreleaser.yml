@@ -1,0 +1,42 @@
+project_name: telemetry-oracle-agent
+before:
+  hooks:
+    - go mod download
+builds:
+  - binary: telemetry-oracle-agent
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    ignore:
+      - goos: darwin
+        goarch: 386
+archives:
+  -
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{.Tag}}-SNAPSHOT-{{.ShortCommit}}"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^misc:'
+      - '^test:'
+      - '^build:'
+release:
+  github:
+    owner: racker
+    name: salus-telemetry-oracle-agent
