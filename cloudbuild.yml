@@ -8,8 +8,7 @@ steps:
       - |
         set -ex
         make init
-        make test-report-junit
-        cat test-results/report.xml
+        make test
 
   - id: UPLOAD_RESULTS
     name: 'gcr.io/cloud-builders/gsutil'
