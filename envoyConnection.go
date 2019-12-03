@@ -15,7 +15,7 @@ var retryLimit = 5
 
 
 type iconnection interface {
-	WriteToEnvoy(input []byte)
+	WriteToEnvoy(input string)
 	Retry() error
 }
 
@@ -62,13 +62,13 @@ func (c *connection) Retry() error {
 }
 
 
-func (c *connection) WriteToEnvoy(input []byte) {
+func (c *connection) WriteToEnvoy(input string) {
 	errFlag := false
 	c.mux.Lock()
 	if c.conn != nil {
 
 
-		_, err := c.conn.Write(append(input, []byte("\r\n")...))
+		_, err := c.conn.Write(append([]byte(input), []byte("\r\n")...))
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
 			err := c.Retry()
