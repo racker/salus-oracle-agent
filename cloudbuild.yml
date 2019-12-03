@@ -11,6 +11,10 @@ steps:
         make test-report-junit
         cat test-results/report.xml
 
+
+
+
+
   - id: UPLOAD_RESULTS
     name: 'gcr.io/cloud-builders/gsutil'
     args: ['cp', 'test-results/report.xml', "gs://salus-cache/salus-telemetry-oracle-agent-test-results/report-${BUILD_ID}.xml"]
