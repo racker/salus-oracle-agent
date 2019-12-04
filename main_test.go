@@ -11,11 +11,13 @@ type TestTimeInformation struct {
 }
 
 func (t *TestTimeInformation) Now() time.Time {
-	return time.Unix(1574201685, 1574201685000).UTC() // return specific timestamp
+  var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
+	return time
 }
 
 func (t *TestTimeInformation) getFileInformation(fileName string) time.Time {
-	return time.Unix(1574201685, 1574201685000).UTC()
+  var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
+	return time
 }
 
 
