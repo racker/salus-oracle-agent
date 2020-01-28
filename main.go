@@ -56,13 +56,13 @@ func main() {
 }
 
 
-func generateJSON(input telegrafJsonMetric) []byte {
+func generateJSON(input telegrafJsonMetric) string {
 
 	returnValue, err := json.Marshal(input)
 	if err != nil {
 		log.Fatal("Could not Marshal the telegrafJsonMetrics: ", err)
 	}
-	return returnValue
+	return string(returnValue)
 }
 
 var createRMANOutput monitorOutput = func(processedData []string, fileName string) {
