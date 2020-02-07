@@ -1,0 +1,1 @@
+{"type":"oracle_dataguard","databaseNames":["dataguard"],"filePath":"./testdata/", "interval":  30}

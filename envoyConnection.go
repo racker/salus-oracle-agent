@@ -68,7 +68,7 @@ func (c *connection) WriteToEnvoy(input string) {
 	if c.conn != nil {
 
 
-		_, err := c.conn.Write(append([]byte(input + "\r\n")))
+		_, err := c.conn.Write(append([]byte(input), []byte("\r\n")...))
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
 			err := c.Retry()
