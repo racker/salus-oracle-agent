@@ -1,12 +1,14 @@
 package main
 
 import (
+	"log"
+	"os"
 	"path/filepath"
 	"time"
 )
 
 type telegrafJsonMetric struct {
-	Timestamp time.Time
+	Timestamp int64
 	Name      string
 	Tags      map[string]string
 	Fields    map[string]interface{}
@@ -14,9 +16,9 @@ type telegrafJsonMetric struct {
 
 type Configuration struct {
 	interval int
-	configType string `json:"type"`
-	databaseName string `json:"databaseNames"`
-	filePath string `json:"filePath"`
+	configType string
+	databaseName string
+	filePath string
 	errorCodeWhitelist []string
 }
 
@@ -36,4 +38,22 @@ type monitorOutput func(processedData []string, fileName string, err error)
 
 type dispatchProcessing func(fileLine string, conf Configuration) []string
 
+type iTimeInformation interface {
+	// the telegraf data format is expecting timestamps as int64
+	Now() int64
+	getFileInformation(string) int64
+}
 
+type TimeInformation struct {}
+
+func (t *TimeInformation) Now() int64 {
+	return time.Now().Unix()
+}
+
+func (t *TimeInformation) getFileInformation(fileName string) int64 {
+	fileStat, err := os.Stat(fileName)
+	if err != nil {
+		log.Fatal("Unable to read file: ", err)
+	}
+	return fileStat.ModTime().Unix()
+}

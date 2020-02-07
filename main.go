@@ -18,27 +18,6 @@ var tickers = make(map[string]time.Ticker)
 var conn iconnection = &connection{}
 var timestamp iTimeInformation = &TimeInformation{}
 
-
-type iTimeInformation interface {
-	Now() time.Time
-	getFileInformation(string) time.Time
-}
-
-type TimeInformation struct {}
-
-func (t *TimeInformation) Now() time.Time {
-	return time.Now()
-}
-
-func (t *TimeInformation) getFileInformation(fileName string) time.Time {
-	fileStat, err := os.Stat(fileName)
-	if err != nil {
-		log.Fatal("Unable to read file: ", err)
-	}
-	return fileStat.ModTime()
-}
-
-
 func main() {
 
 
@@ -50,9 +29,10 @@ func main() {
 	}
 
 	//this needs to be fixed
-	err = readConfigsFromPath("./testdata/config")
+	err = readConfigsFromPath("./config")
 	if err != nil {
 		log.Fatalf("Failed to read Config Files: %s", err)
+		return
 	}
 
 	// This is here only till we get configuration management up to show that each one works
@@ -105,9 +85,9 @@ var createTablespaceOutput monitorOutput = func(processedData []string, fileName
 		output.Fields["status"] = "missing"
 		conn.WriteToEnvoy(generateJSON(output))
 		return
-	}else if processedData == nil {
+	} else if processedData == nil {
 		// this is potentially a formatting issue with the database script we rely on to write the files we are monitoring
-		output.Fields["status"] = "missing"
+		output.Fields["status"] = "malformed"
 		conn.WriteToEnvoy(generateJSON(output))
 		return
 	} else {
@@ -133,10 +113,10 @@ var createDataguardOutput monitorOutput = func(processedData []string, fileName 
 	output.Name = "dataguard"
 	if err != nil {
 		output.Fields["status"] = "missing"
-	}else if processedData == nil {
+	} else if processedData == nil {
 		// this is potentially a formatting issue with the database script we rely on to write the files we are monitoring
-		output.Fields["status"] = "missing"
-	}else {
+		output.Fields["status"] = "malformed"
+	} else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
 		output.Fields["status"] = "success"
 		output.Fields["replication"], _ = strconv.Atoi(processedData[0])

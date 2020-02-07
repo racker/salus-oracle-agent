@@ -10,14 +10,14 @@ import (
 type TestTimeInformation struct {
 }
 
-func (t *TestTimeInformation) Now() time.Time {
+func (t *TestTimeInformation) Now() int64 {
 	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
-	return time
+	return time.Unix()
 }
 
-func (t *TestTimeInformation) getFileInformation(fileName string) time.Time {
+func (t *TestTimeInformation) getFileInformation(fileName string) int64 {
 	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
-	return time
+	return time.Unix()
 }
 
 
