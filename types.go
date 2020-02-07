@@ -2,10 +2,11 @@ package main
 
 import (
 	"path/filepath"
+	"time"
 )
 
 type telegrafJsonMetric struct {
-	Timestamp int64
+	Timestamp time.Time
 	Name      string
 	Tags      map[string]string
 	Fields    map[string]interface{}

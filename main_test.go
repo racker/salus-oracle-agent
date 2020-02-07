@@ -4,8 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/assert"
 	"time"
 )
 
@@ -13,11 +11,13 @@ type TestTimeInformation struct {
 }
 
 func (t *TestTimeInformation) Now() time.Time {
-	return time.Unix(1574201685, 1574201685000) // return specific timestamp
+	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
+	return time
 }
 
 func (t *TestTimeInformation) getFileInformation(fileName string) time.Time {
-	return time.Unix(1574201685, 1574201685000)
+	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
+	return time
 }
 
 
@@ -37,7 +37,7 @@ func (t *Testconnection) Retry() error {
 
 func TestDataguardOutput(t *testing.T) {
 	testObj := new (Testconnection)
-	var byteOutput = string("{\"Timestamp\":1574203259,\"Name\":\"dataguard\",\"Tags\":null,\"Fields\":{\"file_age\":1574203259,\"replication\":1,\"status\":\"success\"}}")
+	var byteOutput = string("{\"Timestamp\":\"2019-11-19T22:40:59.201685Z\",\"Name\":\"dataguard\",\"Tags\":null,\"Fields\":{\"file_age\":\"2019-11-19T22:40:59.201685Z\",\"replication\":1,\"status\":\"success\"}}")
 	conn = testObj
 
 	testObj.On("WriteToEnvoy", mock.Anything)
@@ -54,7 +54,7 @@ func TestRMANOutput(t *testing.T) {
 	conn = testObj
 	timestamp = new (TestTimeInformation)
 	var value = []string{"RMAN-12345","ORA-123","RMAN-456123"}
-	var byteOutput = string("{\"Timestamp\":1574203259,\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[\"RMAN-12345\",\"ORA-123\",\"RMAN-456123\"],\"file_age\":1574203259,\"status\":\"success\"}}")
+	var byteOutput = string("{\"Timestamp\":\"2019-11-19T22:40:59.201685Z\",\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[\"RMAN-12345\",\"ORA-123\",\"RMAN-456123\"],\"file_age\":\"2019-11-19T22:40:59.201685Z\",\"status\":\"success\"}}")
 	testObj.On("WriteToEnvoy", mock.Anything)
 	createRMANOutput(value, "notUsed", nil)
 
@@ -66,8 +66,8 @@ func TestTablespaceOutput(t *testing.T) {
 	conn = testObj
 	timestamp = new (TestTimeInformation)
 	var value = []string{"SYSTEM", "2.59", "SYSAUX", "3.48"}
-	var systemTableOutput = string("{\"Timestamp\":1574203259,\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSTEM\"},\"Fields\":{\"file_age\":1574203259,\"status\":\"success\",\"usage\":\"2.59\"}}")
-	var sysauxTableOutput = string("{\"Timestamp\":1574203259,\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSAUX\"},\"Fields\":{\"file_age\":1574203259,\"status\":\"success\",\"usage\":\"3.48\"}}")
+	var systemTableOutput = string("{\"Timestamp\":\"2019-11-19T22:40:59.201685Z\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSTEM\"},\"Fields\":{\"file_age\":\"2019-11-19T22:40:59.201685Z\",\"status\":\"success\",\"usage\":\"2.59\"}}")
+	var sysauxTableOutput = string("{\"Timestamp\":\"2019-11-19T22:40:59.201685Z\",\"Name\":\"Tablespace\",\"Tags\":{\"tablespace_name\":\"SYSAUX\"},\"Fields\":{\"file_age\":\"2019-11-19T22:40:59.201685Z\",\"status\":\"success\",\"usage\":\"3.48\"}}")
 
 	testObj.On("WriteToEnvoy", mock.Anything)
 	createTablespaceOutput(value, "notUsed", nil)
@@ -81,7 +81,7 @@ func TestRMANOutputSucceedsWithNoErrorCodes(t *testing.T) {
 	conn = testObj
 	timestamp = new (TestTimeInformation)
 	var value = []string{}
-	var byteOutput = string("{\"Timestamp\":1574203259,\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[],\"file_age\":1574203259,\"status\":\"success\"}}")
+	var byteOutput = string("{\"Timestamp\":\"2019-11-19T22:40:59.201685Z\",\"Name\":\"RMAN\",\"Tags\":null,\"Fields\":{\"error_codes\":[],\"file_age\":\"2019-11-19T22:40:59.201685Z\",\"status\":\"success\"}}")
 	testObj.On("WriteToEnvoy", mock.Anything)
 	createRMANOutput(value, "notUsed", nil)
 

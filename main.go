@@ -20,22 +20,22 @@ var timestamp iTimeInformation = &TimeInformation{}
 
 
 type iTimeInformation interface {
-	Now() int64
-	getFileInformation(string) int64
+	Now() time.Time
+	getFileInformation(string) time.Time
 }
 
 type TimeInformation struct {}
 
-func (t *TimeInformation) Now() int64 {
-	return time.Now().Unix()
+func (t *TimeInformation) Now() time.Time {
+	return time.Now()
 }
 
-func (t *TimeInformation) getFileInformation(fileName string) int64 {
+func (t *TimeInformation) getFileInformation(fileName string) time.Time {
 	fileStat, err := os.Stat(fileName)
 	if err != nil {
 		log.Fatal("Unable to read file: ", err)
 	}
-	return fileStat.ModTime().Unix()
+	return fileStat.ModTime()
 }
 
 
