@@ -22,16 +22,16 @@ type Configuration struct {
 	errorCodeWhitelist []string
 }
 
+func (c *Configuration) resolvePath() string {
+	return filepath.Join(c.filePath,c.databaseName+".txt")
+}
+
 type InputConfiguration struct {
 	Type          string   		`json:"type"`
 	DatabaseNames []string 		`json:"databaseNames"`
 	FilePath      string   		`json:"filePath"`
 	Interval      int      		`json:"interval"`
 	ErrorCodeWhitelist []string `json:errorCodeWhitelist`
-}
-
-func (c *Configuration) resolvePath() string {
-	return filepath.Join(c.filePath,c.databaseName+".txt")
 }
 
 type monitorOutput func(processedData []string, fileName string, err error)
