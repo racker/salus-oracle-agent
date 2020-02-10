@@ -235,6 +235,11 @@ func readConfig(path string, info os.FileInfo, err error) error {
 		return err
 	}
 
+	if info.IsDir() {
+		// Dont want to try and deserialize a directory into a config
+		return nil
+	}
+
 	fileContents, _ := ioutil.ReadFile(path)
 
 	var inputConfig InputConfiguration
