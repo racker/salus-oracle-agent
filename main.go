@@ -219,11 +219,6 @@ func readConfig(path string, info os.FileInfo, err error) error {
 		return err
 	}
 
-	if info.IsDir(){
-		log.Println("Oracle Agent doesn't recursively check directories for configurations: ", path)
-		return err
-	}
-
 	fileContents, _ := ioutil.ReadFile(path)
 
 	var inputConfig InputConfiguration
