@@ -52,11 +52,10 @@ func (c *connection) Retry() error {
 		err := c.connect()
 
 		if err == nil {
-			log.Println("Succeeded in reconnecting to Envoy")
+			log.Println("Succeeded in connecting to Envoy")
 			return nil
 		}
 	}
-
 	return errors.New("unable to Connect to Envoy")
 }
 
@@ -74,7 +73,7 @@ func (c *connection) WriteToEnvoy(input string) {
 			}
 			errFlag = true
 		}
-	}else {
+	} else {
 
 		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection.")
 		err := c.Retry()

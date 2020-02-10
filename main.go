@@ -21,10 +21,10 @@ var timestamp iTimeInformation = &TimeInformation{}
 
 
 func main() {
-
 	configArg := flag.String("config",
 		"./config.d",
 		"Path to the configuration directory")
+	flag.Parse()
 
 	go exitApplication()
 
@@ -33,7 +33,6 @@ func main() {
 		log.Fatalf("Failed to connect to Envoy: %s", err)
 	}
 
-	//this needs to be fixed
 	err = readConfigsFromPath(*configArg)
 	if err != nil {
 		log.Fatalf("Failed to read Config Files: %s", err)
