@@ -58,7 +58,6 @@ func (c *connection) Retry() error {
 	}
 
 	return errors.New("unable to Connect to Envoy")
-	//return backoff.Retry(c.connect, backoff.NewExponentialBackOff())
 }
 
 
@@ -66,8 +65,6 @@ func (c *connection) WriteToEnvoy(input string) {
 	errFlag := false
 	c.mux.Lock()
 	if c.conn != nil {
-
-
 		_, err := c.conn.Write(append([]byte(input), []byte("\r\n")...))
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
@@ -79,7 +76,7 @@ func (c *connection) WriteToEnvoy(input string) {
 		}
 	}else {
 
-		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection")
+		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection.")
 		err := c.Retry()
 		if err != nil {
 			log.Fatalf("Could not connect to Envoy: %s\n", err)

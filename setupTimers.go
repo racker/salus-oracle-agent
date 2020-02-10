@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"time"
 )
 
@@ -12,7 +11,6 @@ func setupTimer(config Configuration, dispatch dispatchProcessing, dispatchOutpu
 		for {
 			select {
 			case <-ticker.C:
-				log.Println(config.resolvePath())
 				output, err := readFile(config.resolvePath(), config, dispatch)
 				dispatchOutput(output, config.resolvePath(), err)
 			}

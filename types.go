@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+const (
+	StatusMissing 	= "missing"
+	StatusSuccess 	= "success"
+	StatusMalformed = "malformed"
+	TypeDataguard	= "oracle_dataguard"
+	TypeTablespace	= "oracle_tablespace"
+	TypeRMAN		= "oracle_rman"
+)
+
 type telegrafJsonMetric struct {
 	Timestamp int64
 	Name      string

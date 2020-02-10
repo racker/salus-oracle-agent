@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,8 +19,12 @@ var tickers = make(map[string]time.Ticker)
 var conn iconnection = &connection{}
 var timestamp iTimeInformation = &TimeInformation{}
 
+
 func main() {
 
+	configArg := flag.String("config",
+		"./config.d",
+		"Path to the configuration directory")
 
 	go exitApplication()
 
@@ -29,19 +34,11 @@ func main() {
 	}
 
 	//this needs to be fixed
-	err = readConfigsFromPath("./config")
+	err = readConfigsFromPath(*configArg)
 	if err != nil {
 		log.Fatalf("Failed to read Config Files: %s", err)
 		return
 	}
-
-	// This is here only till we get configuration management up to show that each one works
-	//tickers["dataguard"] = setupTimer(5, "./testdata/dataguard.txt", processDataguard, createDataguardOutput)
-
-	//tickers["rman"]  = setupTimer(5, "./testdata/RMAN.txt", processRMAN, createRMANOutput)
-
-	//tickers["tablespace"] = setupTimer(5, "./testdata/tablespace.txt", processTablespace, createTablespaceOutput)
-
 
 	select { } // make sure the application continues to run
 
@@ -63,12 +60,12 @@ var createRMANOutput monitorOutput = func(processedData []string, fileName strin
 	output.Fields = make(map[string]interface{})
 	output.Fields["error_codes"] = processedData
 	output.Timestamp = timestamp.Now()
-	output.Name = "RMAN"
+	output.Name = TypeRMAN
 	if err != nil {
-		output.Fields["status"] = "missing"
+		output.Fields["status"] = StatusMissing
 	}else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
-		output.Fields["status"] = "success"
+		output.Fields["status"] = StatusSuccess
 	}
 	conn.WriteToEnvoy(generateJSON(output))
 }
@@ -79,10 +76,10 @@ var createTablespaceOutput monitorOutput = func(processedData []string, fileName
 	output.Fields = make(map[string]interface{})
 	output.Tags = make(map[string]string)
 	output.Timestamp = timestamp.Now()
-	output.Name = "Tablespace"
+	output.Name = TypeTablespace
 
 	if err != nil {
-		output.Fields["status"] = "missing"
+		output.Fields["status"] = StatusMissing
 		conn.WriteToEnvoy(generateJSON(output))
 		return
 	} else if processedData == nil {
@@ -92,7 +89,7 @@ var createTablespaceOutput monitorOutput = func(processedData []string, fileName
 		return
 	} else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
-		output.Fields["status"] = "success"
+		output.Fields["status"] = StatusSuccess
 		for index, element := range processedData {
 			if index%2 == 0 { // even should be tablespace name
 				output.Tags["tablespace_name"] = element
@@ -110,15 +107,15 @@ var createDataguardOutput monitorOutput = func(processedData []string, fileName 
 	var output telegrafJsonMetric
 	output.Fields = make(map[string]interface{})
 	output.Timestamp = timestamp.Now()
-	output.Name = "dataguard"
+	output.Name = TypeDataguard
 	if err != nil {
-		output.Fields["status"] = "missing"
+		output.Fields["status"] = StatusMissing
 	} else if processedData == nil {
 		// this is potentially a formatting issue with the database script we rely on to write the files we are monitoring
-		output.Fields["status"] = "malformed"
+		output.Fields["status"] = StatusMalformed
 	} else {
 		output.Fields["file_age"] = timestamp.getFileInformation(fileName)
-		output.Fields["status"] = "success"
+		output.Fields["status"] = StatusSuccess
 		output.Fields["replication"], _ = strconv.Atoi(processedData[0])
 	}
 	conn.WriteToEnvoy(generateJSON(output))
@@ -242,13 +239,13 @@ func readConfig(path string, info os.FileInfo, err error) error {
 	var dispatch dispatchProcessing
 	var output monitorOutput
 	switch inputConfig.Type {
-		case "oracle_dataguard":
+		case TypeDataguard:
 			dispatch = processDataguard
 			output = createDataguardOutput
-		case "oracle_tablespace":
+		case TypeTablespace:
 			dispatch = processTablespace
 			output = createTablespaceOutput
-		case "oracle_rman":
+		case TypeRMAN:
 			dispatch = processRMAN
 			output = createRMANOutput
 			config.errorCodeWhitelist = inputConfig.ErrorCodeWhitelist
