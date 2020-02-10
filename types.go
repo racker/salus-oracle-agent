@@ -56,7 +56,8 @@ type iTimeInformation interface {
 type TimeInformation struct {}
 
 func (t *TimeInformation) Now() int64 {
-	return time.Now().Unix()
+	// Our system is expecting timestamps in milliseconds
+	return time.Now().Unix() * 1000
 }
 
 func (t *TimeInformation) getFileInformation(fileName string) int64 {
@@ -64,5 +65,6 @@ func (t *TimeInformation) getFileInformation(fileName string) int64 {
 	if err != nil {
 		log.Fatal("Unable to read file: ", err)
 	}
-	return fileStat.ModTime().Unix()
+	// Our system is expecting timestamps in milliseconds
+	return fileStat.ModTime().Unix() * 1000
 }

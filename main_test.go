@@ -12,12 +12,14 @@ type TestTimeInformation struct {
 
 func (t *TestTimeInformation) Now() int64 {
 	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
-	return time.Unix()
+	// Our system is expecting timestamps in milliseconds
+	return time.Unix() * 1000
 }
 
 func (t *TestTimeInformation) getFileInformation(fileName string) int64 {
 	var time, _ = time.Parse(time.RFC3339, "2019-11-19T22:40:59.201685Z")
-	return time.Unix()
+	// Our system is expecting timestamps in milliseconds
+	return time.Unix() * 1000
 }
 
 

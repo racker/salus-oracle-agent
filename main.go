@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -83,7 +84,7 @@ var createTablespaceOutput monitorOutput = func(processedData []string, fileName
 		return
 	} else if processedData == nil {
 		// this is potentially a formatting issue with the database script we rely on to write the files we are monitoring
-		output.Fields["status"] = "malformed"
+		output.Fields["status"] = StatusMalformed
 		conn.WriteToEnvoy(generateJSON(output))
 		return
 	} else {
@@ -154,15 +155,15 @@ var processRMAN dispatchProcessing = func(fileLine string, conf Configuration) [
 
 	var foundValues = errorCode.FindAllString(fileLine, -1)
 	var returnValues = []string{}
-	for _, i := range foundValues {
-		var flag = true
-		for _, i2 := range conf.errorCodeWhitelist {
-			if strings.Compare(i, i2) == 0 {
-				flag = false
+	for _, value := range foundValues {
+		var addErrorCode = true
+		for _, whitelistedValue := range conf.errorCodeWhitelist {
+			if strings.Compare(value, whitelistedValue) == 0 {
+				addErrorCode = false
 			}
 		}
-		if flag {
-			returnValues = append(returnValues, i)
+		if addErrorCode {
+			returnValues = append(returnValues, value)
 		}
 	}
 
@@ -218,7 +219,7 @@ func readConfig(path string, info os.FileInfo, err error) error {
 		return err
 	}
 
-	if info.IsDir() {
+	if info.IsDir(){
 		log.Println("Oracle Agent doesn't recursively check directories for configurations: ", path)
 		return err
 	}
@@ -227,8 +228,9 @@ func readConfig(path string, info os.FileInfo, err error) error {
 
 	var inputConfig InputConfiguration
 	err = json.Unmarshal(fileContents, &inputConfig)
-	if(err != nil) {
+	if err != nil {
 		log.Println("Could not unmarshal configuration: ", err)
+		return err
 	}
 
 	var config Configuration
@@ -250,15 +252,13 @@ func readConfig(path string, info os.FileInfo, err error) error {
 			config.errorCodeWhitelist = inputConfig.ErrorCodeWhitelist
 	default:
 		log.Println("Unable to determine type of configuration: ", inputConfig.Type)
-		return nil
+		return errors.New("malformed configuration error")
 	}
 
 	for _, database := range inputConfig.DatabaseNames {
 		config.databaseName = database
 		tickers[info.Name()+":"+database] = setupTimer(config, dispatch, output)
 	}
-
-
 
 	return nil
 }
