@@ -119,7 +119,7 @@ func TestProcessRMANWhitelistAllErrorCodes(t *testing.T) {
 
 	result, err := readFile("./testdata/RMAN.txt", config, processRMAN)
 	assert.Nil(t, err)
-	assert.Empty(t, result, "RMAN expecte to whitelist all error codes")
+	assert.Empty(t, result, "RMAN expected to whitelist all error codes")
 }
 
 func TestProcessTablespace(t *testing.T) {
@@ -177,6 +177,5 @@ func TestReadConfigsFromPath(t *testing.T) {
 	assert.NotNil(t, tickers["tablespace"])
 	assert.NotNil(t, tickers["dataguard"])
 }
-
 
 
