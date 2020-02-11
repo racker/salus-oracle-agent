@@ -9,7 +9,7 @@ Provides an agent that gathers information from exported data from Oracle for re
 
 ## Continuous-Monitoring Config File Format
 
-When running the agent it will periodically collect package telemetry at the interval configured in each config file. The option specifies a directory where any files in that directory that is of the correct format will be processed. The files are expected in JSON format and the structure of those files is:
+When running the agent it will periodically collect Oracle telemetry at the interval configured in each config file. The option specifies a directory where any files in that directory that is of the correct format will be processed. The files are expected in JSON format and the structure of those files is:
 
 ```json
 {
