@@ -122,22 +122,6 @@ func TestProcessRMANWhitelistAllErrorCodes(t *testing.T) {
 	assert.Empty(t, result, "RMAN expecte to whitelist all error codes")
 }
 
-func TestProcessRMANSucceeds(t *testing.T) {
-	config := Configuration {
-		interval: 30,
-		configType: "oracle_RMAN",
-		databaseName: "RMAN",
-		filePath: "./testdata/",
-		errorCodeWhitelist: []string{"RMAN-12345", "ORA-123", "RMAN-1234", "RMAN-456123"},
-	}
-
-
-	result, err := readFile("./testdata/RMAN.txt", config, processRMAN)
-	assert.Nil(t, err)
-	assert.Equal(t, 0, len(result), "All error codes should be in whitelist")
-}
-
-
 func TestProcessTablespace(t *testing.T) {
 	config := Configuration {
 		interval: 30,
