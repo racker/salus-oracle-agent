@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Rackspace US, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package main
 
 import (
@@ -52,13 +68,11 @@ func (c *connection) Retry() error {
 		err := c.connect()
 
 		if err == nil {
-			log.Println("Succeeded in reconnecting to Envoy")
+			log.Println("Succeeded in connecting to Envoy")
 			return nil
 		}
 	}
-
 	return errors.New("unable to Connect to Envoy")
-	//return backoff.Retry(c.connect, backoff.NewExponentialBackOff())
 }
 
 
@@ -66,9 +80,7 @@ func (c *connection) WriteToEnvoy(input string) {
 	errFlag := false
 	c.mux.Lock()
 	if c.conn != nil {
-
-
-		_, err := c.conn.Write(append([]byte(input + "\r\n")))
+		_, err := c.conn.Write(append([]byte(input), []byte("\r\n")...))
 		if err != nil {
 			log.Printf("Could not write to Envoy: %s", err)
 			err := c.Retry()
@@ -77,9 +89,9 @@ func (c *connection) WriteToEnvoy(input string) {
 			}
 			errFlag = true
 		}
-	}else {
+	} else {
 
-		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection")
+		log.Println("Failed to send to Envoy: No Connection. Attempting to recreate connection.")
 		err := c.Retry()
 		if err != nil {
 			log.Fatalf("Could not connect to Envoy: %s\n", err)

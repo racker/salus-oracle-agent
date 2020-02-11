@@ -1,0 +1,1 @@
+{"type":"oracle_rman","databaseNames":["RMAN"],"filePath":"./testdata", "errorCodeWhitelist":  ["RMAN-1234"], "interval":  30}
