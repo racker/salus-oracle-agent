@@ -1,4 +1,4 @@
-Provides an agent that gathers information from exported data from oracle for reporting to a monitoring systems such as Salus.
+Provides an agent that gathers information from exported data from Oracle for reporting to a monitoring system such as Salus.
 
 ## Usage
 
@@ -27,4 +27,3 @@ where:
 - `filePath` : This filePath is the location of where we expect to find the files associated with the database names. 
 - `databaseNames` : This is a list of the names of the databases that we want to monitor. These are expected to be .txt files of the same name as in this list in the filePath provided. 
 - `errorCodeWhitelist` : this parameter is only valid for oracle_rman configurations. This is a list of expected error codes in the output file. If those error codes are discovered then it will be removed from the response
-
